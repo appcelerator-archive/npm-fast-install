@@ -49,10 +49,7 @@ function install(opts) {
 
         // init logger
         var logger = opts.logger && typeof opts.logger === 'object' ? opts.logger : {};
-        ['log', 'debug', 'info', 'warn', 'error'].forEach(function (lvl) {
-            typeof logger[lvl] === 'function' || (logger[lvl] = function () {
-            });
-        });
+        ['log', 'debug', 'info', 'warn', 'error'].forEach(function (lvl) { typeof logger[lvl] === 'function' || (logger[lvl] = function () {}); });
 
         var modulesAPI = parseInt(process.versions.modules) || (function (m) {
                 return !m || m[1] === '0.8' ? 1 : m[1] === '0.10' ? 11 : m[1] === '0.11' && m[2] < 8 ? 12 : 13;
@@ -79,7 +76,6 @@ function install(opts) {
                     return {name: dep, ver: pkgJson.devDependencies[dep]};
                 }));
         }
-
         var results = {
             node: process.version,
             arch: process.arch,
@@ -114,9 +110,7 @@ function install(opts) {
             loglevel: 'silent',
             progress: false
         }, function (err) {
-            if (err) {
-                return cb(err);
-            }
+            if (err) { return cb(err); }
 
             async.eachLimit(deps, opts.maxTasks || 5, function (dep, cb) {
                 if (semver.valid(dep.ver)) {
@@ -128,9 +122,7 @@ function install(opts) {
                 }
 
                 npm.commands.view([dep.name], true, function (err, infos) {
-                    if (err) {
-                        return cb(err);
-                    }
+                    if (err) { return cb(err); }
 
                     var info = infos[Object.keys(infos).shift()];
                     var ver = dep.ver === '*' || dep.ver === 'latest' ? info.version : semver.maxSatisfying(info.versions, dep.ver + ' <=' + info.version);
@@ -151,18 +143,14 @@ function install(opts) {
 
                     // need to install it
                     logger.info('Fetching %s@%s', dep.name, ver);
-                    var tmpDir = tmp.dirSync({prefix: 'npm-fast-install-'}).name;
+                    var tmpDir = tmp.dirSync({ prefix: 'npm-fast-install-' }).name;
                     npm.commands.install(tmpDir, [dep.name + '@' + ver], function (err) {
-                        if (err) {
-                            return cb(err);
-                        }
+                        if (err) { return cb(err); }
 
                         function next(err) {
                             // remove the tmp dir
                             fs.removeSync(tmpDir);
-                            if (err) {
-                                return cb(err);
-                            }
+                            if (err) { return cb(err); }
 
                             // copy the module from the cache
                             logger.info('Installing %s@%s\n', dep.name, ver);

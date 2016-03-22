@@ -61,7 +61,7 @@ function install(opts) {
 		logger.info('npm version:     %s', npm.version + '\n');
 
 		var deps = [];
-		
+
 		if (opts.dependencies) {
 			deps = Object.keys(opts.dependencies).map(function (dep) {
 				return { name: dep, ver: opts.dependencies[dep] };
@@ -69,17 +69,20 @@ function install(opts) {
 		} else {
 			// load the package.json
 			var pkgJsonFile = path.join(dir, 'package.json');
-			if (!opts.dependencies) {
-				if (!fs.existsSync(pkgJsonFile)) {
-					return reject(new Error('No package.json found'));
-				}
-				logger.info('Loading package.json: %s', pkgJsonFile);
+			if (!fs.existsSync(pkgJsonFile)) {
+				return reject(new Error('No package.json found'));
 			}
+			logger.info('Loading package.json: %s', pkgJsonFile);
 			var pkgJson = require(pkgJsonFile);
 			if (pkgJson.dependencies && typeof pkgJson.dependencies === 'object') {
-				deps = Object.keys(pkgJson.dependencies).map(function (dep) {
+				deps = deps.concat(Object.keys(pkgJson.dependencies).map(function (dep) {
 					return { name: dep, ver: pkgJson.dependencies[dep] };
-				});
+				}));
+			}
+			if (!opts.production && pkgJson.devDependencies && typeof pkgJson.devDependencies === 'object') {
+				deps = deps.concat(Object.keys(pkgJson.devDependencies).map(function (dep) {
+					return { name: dep, ver: pkgJson.devDependencies[dep] };
+				}));
 			}
 		}
 		var results = {

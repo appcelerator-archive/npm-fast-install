@@ -61,7 +61,7 @@ function install(opts) {
 		logger.info('npm version:     %s', npm.version + '\n');
 
 		var deps = [];
-		
+
 		if (opts.dependencies) {
 			deps = Object.keys(opts.dependencies).map(function (dep) {
 				return { name: dep, ver: opts.dependencies[dep] };
@@ -80,6 +80,14 @@ function install(opts) {
 				deps = Object.keys(pkgJson.dependencies).map(function (dep) {
 					return { name: dep, ver: pkgJson.dependencies[dep] };
 				});
+			}
+
+			if(!opts.production && pkgJson.devDependencies && typeof pkgJson.devDependencies === 'object') {
+				var devDeps = Object.keys(pkgJson.devDependencies).map(function (dep) {
+					return { name: dep, ver: pkgJson.devDependencies[dep] };
+				});
+
+				deps = deps.concat(devDeps);
 			}
 		}
 		var results = {
